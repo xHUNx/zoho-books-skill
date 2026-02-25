@@ -7,6 +7,7 @@ import mimetypes
 import uuid
 import urllib.parse
 import urllib.request
+import urllib.error
 
 CONFIG_PATH = os.path.expanduser("~/.openclaw/zoho-books/config.json")
 
@@ -172,8 +173,12 @@ def api_request(cfg, dc_info, method, path, query=None, body=None, files=None, r
         headers["Content-Type"] = "application/json"
 
     req = urllib.request.Request(url, data=data, headers=headers, method=method.upper())
-    with urllib.request.urlopen(req) as resp:
-        return resp.read().decode("utf-8")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8")
+        raise SystemExit(body)
 
 
 def load_json_arg(value):
