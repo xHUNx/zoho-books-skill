@@ -23,10 +23,25 @@ python3 scripts/zoho_books.py auth-url --redirect-uri "https://example.com/callb
 python3 scripts/zoho_books.py exchange-code --code "YOUR_CODE" --redirect-uri "https://example.com/callback"
 ```
 
-5) List organizations:
+5) List organizations and select one:
 
 ```bash
-python3 scripts/zoho_books.py request --method GET --path /organizations
+python3 scripts/zoho_books.py orgs-list
+python3 scripts/zoho_books.py orgs-select --id "ORG_ID"
+```
+
+6) Core commands (examples):
+
+```bash
+python3 scripts/zoho_books.py contacts-list
+python3 scripts/zoho_books.py contacts-create --body @contact.json
+
+python3 scripts/zoho_books.py expenses-create --body @expense.json --receipt /path/to/receipt.pdf
+python3 scripts/zoho_books.py invoices-create --body @invoice.json
+python3 scripts/zoho_books.py invoices-email --invoice-id "INV_ID" --body @invoice_email.json
+
+python3 scripts/zoho_books.py banktransactions-list --query '{"status":"uncategorized"}'
+python3 scripts/zoho_books.py banktransactions-match --transaction-id "TXN_ID" --body @match.json
 ```
 
 ## Config

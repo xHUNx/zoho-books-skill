@@ -16,4 +16,5 @@ python3 scripts/zoho_books.py auth-url --redirect-uri "https://example.com/callb
 ## Notes
 - Default data center: EU (configurable)
 - Uses OAuth refresh tokens
-- Full module map + workflows coming next
+- Core commands implemented: orgs, contacts, expenses (with receipt), invoices (create/email), bank transactions (list/match)
+- Full module map + workflows continue next
