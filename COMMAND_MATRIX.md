@@ -45,7 +45,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve
+- actions: status-open, status-void, submit, approve, comments-list/add/delete, attach, payments-list/add/get/delete
 
 ## Chart Of Accounts
 
@@ -81,7 +81,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-void, status-draft, status-open, submit, approve, email
+- actions: status-void, status-draft, status-open, submit, approve, email, comments-list/add/delete, templates-list/apply, refunds-list/add/get/update/delete
 
 ## Currency
 
@@ -117,7 +117,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: refunds (not yet)
+- actions: refunds-list/add/get/update/delete
 
 ## Estimates
 
@@ -126,7 +126,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-accepted, status-declined, submit, approve, email
+- actions: status-sent, status-accepted, status-declined, submit, approve, email, comments-list/add/delete, templates-list/apply
 
 ## Expenses
 
@@ -162,7 +162,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email
+- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete
 
 ## Items
 
@@ -180,7 +180,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: publish
+- actions: publish, comments-list/add/delete, attach
 
 ## Locations
 
@@ -225,7 +225,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-billed, status-cancelled, submit, approve, email, reject
+- actions: status-open, status-billed, status-cancelled, submit, approve, email, reject, comments-list/add/delete, attach, templates-list/apply
 
 ## Recurring Bills
 
@@ -270,7 +270,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-void, status-draft, submit, approve, email
+- actions: status-sent, status-void, status-draft, submit, approve, email, comments-list/add/delete, attach, templates-list/apply
 
 ## Sales Order
 
@@ -279,7 +279,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve, email
+- actions: status-open, status-void, submit, approve, email, comments-list/add/delete, attach, templates-list/apply
 
 ## Sales Receipt
 
@@ -333,7 +333,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve
+- actions: status-open, status-void, submit, approve, comments-list/add/delete, refunds-list/add/get/update/delete
 
 ## Vendor Payments
 
@@ -342,4 +342,4 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: email
+- actions: email, refunds-list/add/get/update/delete

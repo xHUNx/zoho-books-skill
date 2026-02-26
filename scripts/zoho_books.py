@@ -181,6 +181,41 @@ def api_request(cfg, dc_info, method, path, query=None, body=None, files=None, r
         raise SystemExit(body)
 
 
+def api_request_raw(cfg, dc_info, method, path, query=None, body=None, files=None, require_org=True):
+    token = get_access_token(cfg, dc_info)
+    org_id = cfg.get("organization_id")
+    if require_org and not org_id:
+        raise SystemExit("Missing organization_id in config")
+
+    query = query or {}
+    if require_org:
+        query["organization_id"] = org_id
+    url = f"{dc_info['api']}{path}"
+    if query:
+        url = f"{url}?{urllib.parse.urlencode(query)}"
+
+    data = None
+    headers = {"Authorization": f"Zoho-oauthtoken {token}"}
+
+    if files:
+        fields = {}
+        if body:
+            fields.update(body)
+        data, boundary = build_multipart(fields, files)
+        headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+    elif body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(url, data=data, headers=headers, method=method.upper())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8")
+        raise SystemExit(body)
+
+
 def load_json_arg(value):
     if value is None:
         return None
@@ -387,6 +422,118 @@ def add_timeentry_commands(sub):
     s.set_defaults(_method="GET", _path="/projects/timeentries/runningtimer/me", _handler=handle_api_command)
 
 
+def cmd_upload(cfg, dc_info, path, file_path, field="attachment", body=None):
+    body = load_json_arg(body) if isinstance(body, str) else body
+    resp = api_request(cfg, dc_info, "POST", path, body=body, files={field: file_path})
+    print(resp)
+
+
+def cmd_download(cfg, dc_info, path, out_path, query=None):
+    query = load_json_arg(query) if isinstance(query, str) and query else (query or {})
+    data = api_request_raw(cfg, dc_info, "GET", path, query=query)
+    with open(out_path, "wb") as f:
+        f.write(data)
+    print(json.dumps({"saved": out_path, "bytes": len(data)}))
+
+
+def add_comments_commands(sub, prefix, base_path):
+    s = sub.add_parser(f"{prefix}-comments-list", help=f"List {prefix} comments")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path=base_path, _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-comments-add", help=f"Add {prefix} comment")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path=base_path, _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-comments-delete", help=f"Delete {prefix} comment")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--comment-id", required=True)
+    s.set_defaults(_method="DELETE", _path=base_path + "/{comment_id}", _handler=handle_api_command)
+
+
+def add_attachment_command(sub, prefix, path_template):
+    s = sub.add_parser(f"{prefix}-attach", help=f"Attach file to {prefix}")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--file", required=True)
+    s.add_argument("--field", default="attachment")
+    s.add_argument("--body", default=None, help="JSON object (or @file.json)")
+    s.set_defaults(_handler="_upload", _path=path_template)
+
+
+def add_templates_commands(sub, prefix, base):
+    s = sub.add_parser(f"{prefix}-templates-list", help=f"List {prefix} templates")
+    s.add_argument("--dc", default=None)
+    s.set_defaults(_method="GET", _path=f"/{base}/templates", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-template-apply", help=f"Apply {prefix} template")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--template-id", required=True)
+    s.set_defaults(_method="PUT", _path=f"/{base}/{{id}}/templates/{{template_id}}", _handler=handle_api_command)
+
+
+def add_payments_commands(sub, prefix, base):
+    s = sub.add_parser(f"{prefix}-payments-list", help=f"List {prefix} payments")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path=f"/{base}/{{id}}/payments", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-payments-add", help=f"Add {prefix} payment")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path=f"/{base}/{{id}}/payments", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-payments-get", help=f"Get {prefix} payment")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--payment-id", required=True)
+    s.set_defaults(_method="GET", _path=f"/{base}/{{id}}/payments/{{payment_id}}", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-payments-delete", help=f"Delete {prefix} payment")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--payment-id", required=True)
+    s.set_defaults(_method="DELETE", _path=f"/{base}/{{id}}/payments/{{payment_id}}", _handler=handle_api_command)
+
+
+def add_refunds_commands(sub, prefix, base, refund_param="refund_id"):
+    s = sub.add_parser(f"{prefix}-refunds-list", help=f"List {prefix} refunds")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path=f"/{base}/{{id}}/refunds", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-refunds-add", help=f"Add {prefix} refund")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path=f"/{base}/{{id}}/refunds", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-refunds-get", help=f"Get {prefix} refund")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument(f"--{refund_param.replace('_','-')}", required=True)
+    s.set_defaults(_method="GET", _path=f"/{base}/{{id}}/refunds/{{{refund_param}}}", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-refunds-update", help=f"Update {prefix} refund")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument(f"--{refund_param.replace('_','-')}", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="PUT", _path=f"/{base}/{{id}}/refunds/{{{refund_param}}}", _handler=handle_api_command)
+
+    s = sub.add_parser(f"{prefix}-refunds-delete", help=f"Delete {prefix} refund")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument(f"--{refund_param.replace('_','-')}", required=True)
+    s.set_defaults(_method="DELETE", _path=f"/{base}/{{id}}/refunds/{{{refund_param}}}", _handler=handle_api_command)
+
+
 def main():
     p = argparse.ArgumentParser(description="Zoho Books CLI helper")
     sub = p.add_subparsers(dest="cmd")
@@ -407,6 +554,20 @@ def main():
 
     s = sub.add_parser("refresh", help="Refresh access token")
     s.add_argument("--dc", default=None)
+
+    
+    s = sub.add_parser("upload", help="Upload file (multipart) to a path")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--path", required=True)
+    s.add_argument("--file", required=True)
+    s.add_argument("--field", default="attachment")
+    s.add_argument("--body", default=None, help="JSON object (or @file.json)")
+
+    s = sub.add_parser("download", help="Download raw response to file")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--path", required=True)
+    s.add_argument("--out", required=True)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
 
     s = sub.add_parser("request", help="Make API request")
     s.add_argument("--dc", default=None)
@@ -691,6 +852,45 @@ def main():
         ],
     )
     add_resource_commands(sub, "salesreceipts", "/salesreceipts")
+
+    # Advanced actions: comments, attachments, templates, payments, refunds
+    add_comments_commands(sub, "invoices", "/invoices/{id}/comments")
+    add_attachment_command(sub, "invoices", "/invoices/{id}/attachment")
+    add_templates_commands(sub, "invoices", "invoices")
+    add_payments_commands(sub, "invoices", "invoices")
+
+    add_comments_commands(sub, "bills", "/bills/{id}/comments")
+    add_attachment_command(sub, "bills", "/bills/{id}/attachment")
+    add_payments_commands(sub, "bills", "bills")
+
+    add_comments_commands(sub, "estimates", "/estimates/{id}/comments")
+    add_templates_commands(sub, "estimates", "estimates")
+
+    add_comments_commands(sub, "salesorders", "/salesorders/{id}/comments")
+    add_attachment_command(sub, "salesorders", "/salesorders/{id}/attachment")
+    add_templates_commands(sub, "salesorders", "salesorders")
+
+    add_comments_commands(sub, "purchaseorders", "/purchaseorders/{id}/comments")
+    add_attachment_command(sub, "purchaseorders", "/purchaseorders/{id}/attachment")
+    add_templates_commands(sub, "purchaseorders", "purchaseorders")
+
+    add_comments_commands(sub, "creditnotes", "/creditnotes/{id}/comments")
+    add_templates_commands(sub, "creditnotes", "creditnotes")
+    add_refunds_commands(sub, "creditnotes", "creditnotes", refund_param="creditnote_refund_id")
+
+    add_comments_commands(sub, "retainerinvoices", "/retainerinvoices/{id}/comments")
+    add_attachment_command(sub, "retainerinvoices", "/retainerinvoices/{id}/attachment")
+    add_templates_commands(sub, "retainerinvoices", "retainerinvoices")
+
+    add_comments_commands(sub, "journals", "/journals/{id}/comments")
+    add_attachment_command(sub, "journals", "/journals/{id}/attachment")
+
+    add_comments_commands(sub, "vendorcredits", "/vendorcredits/{id}/comments")
+    add_refunds_commands(sub, "vendorcredits", "vendorcredits", refund_param="vendor_credit_refund_id")
+
+    add_refunds_commands(sub, "vendorpayments", "vendorpayments", refund_param="vendorpayment_refund_id")
+    add_refunds_commands(sub, "customerpayments", "customerpayments", refund_param="refund_id")
+
     add_resource_commands(sub, "users", "/users")
 
     args = p.parse_args()
@@ -739,6 +939,19 @@ def main():
         print(json.dumps(resp, indent=2))
         return
 
+
+    if args.cmd == "upload":
+        dc, dc_info = get_dc(cfg, args.dc)
+        path = args.path
+        body = args.body
+        cmd_upload(cfg, dc_info, path, args.file, field=args.field, body=body)
+        return
+
+    if args.cmd == "download":
+        dc, dc_info = get_dc(cfg, args.dc)
+        cmd_download(cfg, dc_info, args.path, args.out, query=args.query)
+        return
+
     if args.cmd == "request":
         dc, dc_info = get_dc(cfg, args.dc)
         query = load_json_arg(args.query) if args.query else {}
@@ -782,6 +995,13 @@ def main():
     if args.cmd == "banktransactions-match-suggestions":
         dc, dc_info = get_dc(cfg, args.dc)
         cmd_banktransactions_uncategorized_matches(cfg, dc_info, args.transaction_id)
+        return
+
+
+    if getattr(args, "_handler", None) == "_upload":
+        dc, dc_info = get_dc(cfg, args.dc)
+        path = build_path(args._path, args)
+        cmd_upload(cfg, dc_info, path, args.file, field=args.field, body=args.body)
         return
 
     if hasattr(args, "_handler"):

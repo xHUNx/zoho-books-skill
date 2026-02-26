@@ -61,9 +61,12 @@ python3 scripts/zoho_books.py expenses-list --query '{"date_start":"2024-01-01"}
 python3 scripts/zoho_books.py invoices-create --body @invoice.json
 python3 scripts/zoho_books.py invoices-status-sent --id "INV_ID"
 python3 scripts/zoho_books.py invoices-email --invoice-id "INV_ID" --body @invoice_email.json
+python3 scripts/zoho_books.py invoices-comments-add --id "INV_ID" --body @comment.json
+python3 scripts/zoho_books.py invoices-attach --id "INV_ID" --file /path/to/file.pdf
 
 python3 scripts/zoho_books.py bills-create --body @bill.json
 python3 scripts/zoho_books.py bills-approve --id "BILL_ID"
+python3 scripts/zoho_books.py bills-attach --id "BILL_ID" --file /path/to/file.pdf
 
 python3 scripts/zoho_books.py banktransactions-list --query '{"status":"uncategorized"}'
 python3 scripts/zoho_books.py banktransactions-match --transaction-id "TXN_ID" --body @match.json
@@ -72,6 +75,10 @@ python3 scripts/zoho_books.py banktransactions-unmatch --id "TXN_ID"
 python3 scripts/zoho_books.py projects-create --body @project.json
 python3 scripts/zoho_books.py tasks-list --project-id "PROJ_ID"
 python3 scripts/zoho_books.py timeentries-timer-start --id "TIME_ID"
+
+# Generic file upload / download
+python3 scripts/zoho_books.py upload --path "/invoices/INV_ID/attachment" --file /path/to/file.pdf
+python3 scripts/zoho_books.py download --path "/invoices/pdf" --query '{"invoice_id":"INV_ID"}' --out invoice.pdf
 ```
 
 ## Config
