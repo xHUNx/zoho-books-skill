@@ -661,6 +661,38 @@ def main():
     add_resource_commands(sub, "taxauthorities", "/settings/taxauthorities")
     add_resource_commands(sub, "taxexemptions", "/settings/taxexemptions")
 
+    add_resource_commands(sub, "bankrules", "/bankaccounts/rules")
+    add_resource_commands(sub, "basecurrencyadjustment", "/basecurrencyadjustment")
+    add_resource_commands(sub, "contactpersons", "/contacts/contactpersons")
+    add_resource_commands(sub, "currencies", "/settings/currencies")
+    add_resource_commands(sub, "fixedassets", "/fixedassets")
+    add_resource_commands(
+        sub,
+        "locations",
+        "/locations",
+        actions=[
+            {"name": "enable", "method": "POST", "path": "/settings/locations/enable", "needs_id": False},
+            {"name": "activate", "method": "POST", "path": "/locations/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/locations/{id}/inactive"},
+            {"name": "mark-primary", "method": "POST", "path": "/locations/{id}/markasprimary"},
+        ],
+    )
+    add_resource_commands(sub, "openingbalances", "/settings/openingbalances")
+    add_resource_commands(sub, "organizations", "/organizations", skip={"create", "update", "delete"})
+    add_resource_commands(sub, "recurringbills", "/recurringbills")
+    add_resource_commands(sub, "recurringexpenses", "/recurringexpenses")
+    add_resource_commands(sub, "recurringinvoices", "/recurringinvoices")
+    add_resource_commands(
+        sub,
+        "reportingtags",
+        "/reportingtags",
+        actions=[
+            {"name": "mark-default", "method": "POST", "path": "/reportingtags/{id}", "query": True},
+        ],
+    )
+    add_resource_commands(sub, "salesreceipts", "/salesreceipts")
+    add_resource_commands(sub, "users", "/users")
+
     args = p.parse_args()
     cfg = load_config()
 

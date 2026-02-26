@@ -18,7 +18,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Bank Transactions
 
@@ -36,7 +36,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Bills
 
@@ -63,7 +63,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Contacts
 
@@ -90,7 +90,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Custom Modules
 
@@ -99,7 +99,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (custom module name via path; not wired)
 
 ## Customer Debit Notes
 
@@ -108,7 +108,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (not wired yet)
 
 ## Customer Payments
 
@@ -144,7 +144,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## ZOHO CRM Integration
 
@@ -189,7 +189,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: enable, activate, deactivate, mark-primary
 
 ## Opening Balance
 
@@ -198,7 +198,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Organizations
 
@@ -207,7 +207,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (list/get wired; create/update/delete not wired)
 
 ## Projects
 
@@ -234,7 +234,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Recurring Expenses
 
@@ -243,7 +243,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Recurring Invoices
 
@@ -252,7 +252,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Reporting Tags
 
@@ -261,7 +261,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: mark-default
 
 ## Retainer Invoices
 
@@ -288,7 +288,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Tasks
 
@@ -324,7 +324,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none)
 
 ## Vendor Credits
 

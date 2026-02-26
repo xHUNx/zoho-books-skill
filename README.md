@@ -89,4 +89,4 @@ Stored at: `~/.openclaw/zoho-books/config.json`
 ```
 
 ## Status
-OAuth scaffold complete. Core CRUD + actions added for major accounting modules (invoices, expenses, bills, contacts, items, bank accounts/transactions, estimates, sales/purchase orders, credit notes, retainer invoices, projects/tasks/time entries, taxes, journals). Continue expanding to full module coverage and advanced actions.
+OAuth scaffold complete. Core CRUD + actions added for major accounting modules (invoices, expenses, bills, contacts, items, bank accounts/transactions, estimates, sales/purchase orders, credit notes, retainer invoices, vendor credits/payments, projects/tasks/time entries, taxes, journals) plus remaining modules (bank rules, base currency adjustment, contact persons, currencies, fixed assets, locations, opening balances, recurring bills/expenses/invoices, reporting tags, sales receipts, users). Continue expanding advanced actions and custom module handling.
