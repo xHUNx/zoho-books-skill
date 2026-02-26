@@ -208,8 +208,30 @@ def cmd_contacts_list(cfg, dc_info, query):
     print(resp)
 
 
+def find_contact_by_name(cfg, dc_info, name):
+    resp = api_request(cfg, dc_info, "GET", "/contacts", query={"search_text": name})
+    data = json.loads(resp)
+    return data.get("contacts", [])
+
+
 def cmd_contacts_create(cfg, dc_info, body):
     resp = api_request(cfg, dc_info, "POST", "/contacts", body=body)
+    print(resp)
+
+
+def cmd_contacts_upsert(cfg, dc_info, name, contact_type):
+    matches = find_contact_by_name(cfg, dc_info, name)
+    for c in matches:
+        if c.get("contact_name") == name and c.get("contact_type") == contact_type:
+            print(json.dumps({"action": "exists", "contact": c}, indent=2))
+            return
+    resp = api_request(
+        cfg,
+        dc_info,
+        "POST",
+        "/contacts",
+        body={"contact_name": name, "contact_type": contact_type},
+    )
     print(resp)
 
 
@@ -319,6 +341,11 @@ def main():
     s.add_argument("--dc", default=None)
     s.add_argument("--body", required=True, help="JSON object (or @file.json)")
 
+    s = sub.add_parser("contacts-upsert", help="Create contact only if missing")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--name", required=True)
+    s.add_argument("--type", required=True, choices=["customer", "vendor"])  
+
     s = sub.add_parser("expenses-create", help="Create expense (optionally attach receipt/attachment)")
     s.add_argument("--dc", default=None)
     s.add_argument("--body", required=True, help="JSON object (or @file.json)")
@@ -420,6 +447,11 @@ def main():
         dc, dc_info = get_dc(cfg, args.dc)
         body = load_json_arg(args.body)
         cmd_contacts_create(cfg, dc_info, body)
+        return
+
+    if args.cmd == "contacts-upsert":
+        dc, dc_info = get_dc(cfg, args.dc)
+        cmd_contacts_upsert(cfg, dc_info, args.name, args.type)
         return
 
     if args.cmd == "expenses-create":
