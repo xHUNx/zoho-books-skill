@@ -754,9 +754,6 @@ def main():
     s.add_argument("--out", required=True)
     s.set_defaults(_handler="_download", _path="/salesorders/print")
 
-    s.add_argument("--dc", default=None)
-    s.add_argument("--transaction-id", required=True)
-
     add_resource_commands(
         sub,
         "contacts",
@@ -1056,6 +1053,12 @@ def main():
     add_refunds_commands(sub, "customerpayments", "customerpayments", refund_param="refund_id")
 
     add_resource_commands(sub, "users", "/users")
+
+    add_custom_modules_commands(sub)
+    add_bankstatements_commands(sub)
+    add_invoice_credits_commands(sub)
+    add_bills_credits_commands(sub)
+    add_vendorcredits_bills_commands(sub)
 
     args = p.parse_args()
     cfg = load_config()
