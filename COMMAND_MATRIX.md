@@ -9,7 +9,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: activate, deactivate
 
 ## Bank Rules
 
@@ -27,7 +27,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: match, unmatch, uncategorize
 
 ## Base Currency Adjustment
 
@@ -45,7 +45,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-open, status-void, submit, approve
 
 ## Chart Of Accounts
 
@@ -54,7 +54,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: activate, deactivate
 
 ## Contact Persons
 
@@ -72,7 +72,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: activate, deactivate, portal-enable
 
 ## Credit Notes
 
@@ -81,7 +81,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-void, status-draft, status-open, submit, approve, email
 
 ## Currency
 
@@ -117,7 +117,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: refunds (not yet)
 
 ## Estimates
 
@@ -126,7 +126,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-sent, status-accepted, status-declined, submit, approve, email
 
 ## Expenses
 
@@ -135,7 +135,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: comments-list, receipt/attachment (create)
 
 ## Fixed Assets
 
@@ -162,7 +162,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email
 
 ## Items
 
@@ -171,7 +171,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: activate, deactivate
 
 ## Journals
 
@@ -180,7 +180,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: publish
 
 ## Locations
 
@@ -216,7 +216,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: activate, deactivate, clone
 
 ## Purchase Order
 
@@ -225,7 +225,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-open, status-billed, status-cancelled, submit, approve, email, reject
 
 ## Recurring Bills
 
@@ -270,7 +270,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-sent, status-void, status-draft, submit, approve, email
 
 ## Sales Order
 
@@ -279,7 +279,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-open, status-void, submit, approve, email
 
 ## Sales Receipt
 
@@ -292,12 +292,12 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 
 ## Tasks
 
-- list
+- list (by project_id)
 - get
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (none yet)
 
 ## Taxes
 
@@ -306,7 +306,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: (taxgroups, taxauthorities, taxexemptions supported as separate modules)
 
 ## Time Entries
 
@@ -315,7 +315,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: timer-start, timer-stop, timer-running
 
 ## Users
 
@@ -333,7 +333,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: status-open, status-void, submit, approve
 
 ## Vendor Payments
 
@@ -342,4 +342,4 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (status/email/submit/approve/etc — fill per module)
+- actions: email

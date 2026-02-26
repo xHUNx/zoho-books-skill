@@ -15,5 +15,5 @@ python3 scripts/setup_wizard.py
 ## Notes
 - Default data center: EU (configurable)
 - Uses OAuth refresh tokens
-- Core commands implemented: orgs, contacts, expenses (with receipt), invoices (create/email), bank transactions (list/match)
+- Core commands implemented: orgs, contacts, invoices, expenses, bills, items, bank accounts/transactions, estimates, sales/purchase orders, credit notes, retainer invoices, vendor credits/payments, projects/tasks/time entries, taxes, journals (see COMMAND_MATRIX.md)
 - Full module map + workflows continue next

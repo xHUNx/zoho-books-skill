@@ -192,6 +192,10 @@ def load_json_arg(value):
     return json.loads(value)
 
 
+def build_path(template, args):
+    return template.format(**args.__dict__)
+
+
 def cmd_orgs_list(cfg, dc_info):
     resp = api_request(cfg, dc_info, "GET", "/organizations", require_org=False)
     print(resp)
@@ -203,25 +207,10 @@ def cmd_orgs_select(cfg, org_id):
     print(f"Selected organization_id: {org_id}")
 
 
-def cmd_contacts_list(cfg, dc_info, query):
-    resp = api_request(cfg, dc_info, "GET", "/contacts", query=query)
-    print(resp)
-
-
-def find_contact_by_name(cfg, dc_info, name):
+def cmd_contacts_upsert(cfg, dc_info, name, contact_type):
     resp = api_request(cfg, dc_info, "GET", "/contacts", query={"search_text": name})
     data = json.loads(resp)
-    return data.get("contacts", [])
-
-
-def cmd_contacts_create(cfg, dc_info, body):
-    resp = api_request(cfg, dc_info, "POST", "/contacts", body=body)
-    print(resp)
-
-
-def cmd_contacts_upsert(cfg, dc_info, name, contact_type):
-    matches = find_contact_by_name(cfg, dc_info, name)
-    for c in matches:
+    for c in data.get("contacts", []):
         if c.get("contact_name") == name and c.get("contact_type") == contact_type:
             print(json.dumps({"action": "exists", "contact": c}, indent=2))
             return
@@ -263,18 +252,8 @@ def cmd_expenses_create(cfg, dc_info, body, receipt=None, attachment=None):
         print(json.dumps({"expense_id": expense_id, "receipt": bool(receipt), "attachment": bool(attachment)}))
 
 
-def cmd_invoices_create(cfg, dc_info, body):
-    resp = api_request(cfg, dc_info, "POST", "/invoices", body=body)
-    print(resp)
-
-
 def cmd_invoices_email(cfg, dc_info, invoice_id, body=None):
     resp = api_request(cfg, dc_info, "POST", f"/invoices/{invoice_id}/email", body=body or {})
-    print(resp)
-
-
-def cmd_banktransactions_list(cfg, dc_info, query):
-    resp = api_request(cfg, dc_info, "GET", "/banktransactions", query=query)
     print(resp)
 
 
@@ -297,6 +276,115 @@ def cmd_banktransactions_uncategorized_matches(cfg, dc_info, transaction_id):
         f"/banktransactions/uncategorized/{transaction_id}/match",
     )
     print(resp)
+
+
+def handle_api_command(cfg, dc_info, args):
+    path = build_path(args._path, args)
+    query = load_json_arg(args.query) if getattr(args, "query", None) else {}
+    body = load_json_arg(args.body) if getattr(args, "body", None) else None
+    resp = api_request(cfg, dc_info, args._method, path, query=query, body=body)
+    print(resp)
+
+
+def add_resource_commands(sub, name, base_path, actions=None, skip=None):
+    skip = set(skip or [])
+    actions = actions or []
+
+    if "list" not in skip:
+        s = sub.add_parser(f"{name}-list", help=f"List {name}")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+        s.set_defaults(_method="GET", _path=base_path, _handler=handle_api_command)
+
+    if "get" not in skip:
+        s = sub.add_parser(f"{name}-get", help=f"Get {name} by id")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--id", required=True)
+        s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+        s.set_defaults(_method="GET", _path=f"{base_path}/{{id}}", _handler=handle_api_command)
+
+    if "create" not in skip:
+        s = sub.add_parser(f"{name}-create", help=f"Create {name}")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+        s.set_defaults(_method="POST", _path=base_path, _handler=handle_api_command)
+
+    if "update" not in skip:
+        s = sub.add_parser(f"{name}-update", help=f"Update {name}")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--id", required=True)
+        s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+        s.set_defaults(_method="PUT", _path=f"{base_path}/{{id}}", _handler=handle_api_command)
+
+    if "delete" not in skip:
+        s = sub.add_parser(f"{name}-delete", help=f"Delete {name}")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--id", required=True)
+        s.set_defaults(_method="DELETE", _path=f"{base_path}/{{id}}", _handler=handle_api_command)
+
+    for action in actions:
+        s = sub.add_parser(f"{name}-{action['name']}", help=action.get("help", ""))
+        s.add_argument("--dc", default=None)
+        if action.get("needs_id", True):
+            s.add_argument("--id", required=True)
+        if action.get("query", False):
+            s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+        if action.get("body", False):
+            s.add_argument("--body", default=None, help="JSON object (or @file.json)")
+        s.set_defaults(_method=action["method"], _path=action["path"], _handler=handle_api_command)
+
+
+def add_tasks_commands(sub):
+    base = "/projects/{project_id}/tasks"
+    s = sub.add_parser("tasks-list", help="List tasks for a project")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--project-id", required=True)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.set_defaults(_method="GET", _path=base, _handler=handle_api_command)
+
+    s = sub.add_parser("tasks-get", help="Get task")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--project-id", required=True)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path=f"{base}/{{id}}", _handler=handle_api_command)
+
+    s = sub.add_parser("tasks-create", help="Create task")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--project-id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path=base, _handler=handle_api_command)
+
+    s = sub.add_parser("tasks-update", help="Update task")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--project-id", required=True)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="PUT", _path=f"{base}/{{id}}", _handler=handle_api_command)
+
+    s = sub.add_parser("tasks-delete", help="Delete task")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--project-id", required=True)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="DELETE", _path=f"{base}/{{id}}", _handler=handle_api_command)
+
+
+def add_timeentry_commands(sub):
+    base = "/projects/timeentries"
+    add_resource_commands(sub, "timeentries", base)
+
+    s = sub.add_parser("timeentries-timer-start", help="Start time entry timer")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="POST", _path="/projects/timeentries/{id}/timer/start", _handler=handle_api_command)
+
+    s = sub.add_parser("timeentries-timer-stop", help="Stop running timer")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--body", default=None, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/projects/timeentries/timer/stop", _handler=handle_api_command)
+
+    s = sub.add_parser("timeentries-timer-running", help="Get running timer for me")
+    s.add_argument("--dc", default=None)
+    s.set_defaults(_method="GET", _path="/projects/timeentries/runningtimer/me", _handler=handle_api_command)
 
 
 def main():
@@ -333,18 +421,10 @@ def main():
     s = sub.add_parser("orgs-select", help="Select organization")
     s.add_argument("--id", required=True)
 
-    s = sub.add_parser("contacts-list", help="List contacts")
-    s.add_argument("--dc", default=None)
-    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
-
-    s = sub.add_parser("contacts-create", help="Create contact")
-    s.add_argument("--dc", default=None)
-    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
-
     s = sub.add_parser("contacts-upsert", help="Create contact only if missing")
     s.add_argument("--dc", default=None)
     s.add_argument("--name", required=True)
-    s.add_argument("--type", required=True, choices=["customer", "vendor"])  
+    s.add_argument("--type", required=True, choices=["customer", "vendor"])
 
     s = sub.add_parser("expenses-create", help="Create expense (optionally attach receipt/attachment)")
     s.add_argument("--dc", default=None)
@@ -352,18 +432,10 @@ def main():
     s.add_argument("--receipt", default=None)
     s.add_argument("--attachment", default=None)
 
-    s = sub.add_parser("invoices-create", help="Create invoice")
-    s.add_argument("--dc", default=None)
-    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
-
     s = sub.add_parser("invoices-email", help="Email invoice")
     s.add_argument("--dc", default=None)
     s.add_argument("--invoice-id", required=True)
     s.add_argument("--body", default=None, help="JSON object (or @file.json)")
-
-    s = sub.add_parser("banktransactions-list", help="List bank transactions")
-    s.add_argument("--dc", default=None)
-    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
 
     s = sub.add_parser("banktransactions-match", help="Match uncategorized bank transaction")
     s.add_argument("--dc", default=None)
@@ -373,6 +445,221 @@ def main():
     s = sub.add_parser("banktransactions-match-suggestions", help="Get match suggestions")
     s.add_argument("--dc", default=None)
     s.add_argument("--transaction-id", required=True)
+
+    add_resource_commands(
+        sub,
+        "contacts",
+        "/contacts",
+        actions=[
+            {"name": "activate", "method": "POST", "path": "/contacts/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/contacts/{id}/inactive"},
+            {"name": "portal-enable", "method": "POST", "path": "/contacts/{id}/portal/enable"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "expenses",
+        "/expenses",
+        actions=[
+            {"name": "comments-list", "method": "GET", "path": "/expenses/{id}/comments"},
+        ],
+        skip={"create"},
+    )
+
+    add_resource_commands(
+        sub,
+        "invoices",
+        "/invoices",
+        actions=[
+            {"name": "status-sent", "method": "POST", "path": "/invoices/{id}/status/sent"},
+            {"name": "status-void", "method": "POST", "path": "/invoices/{id}/status/void"},
+            {"name": "status-draft", "method": "POST", "path": "/invoices/{id}/status/draft"},
+            {"name": "submit", "method": "POST", "path": "/invoices/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/invoices/{id}/approve"},
+            {"name": "paymentreminder-enable", "method": "POST", "path": "/invoices/{id}/paymentreminder/enable"},
+            {"name": "paymentreminder-disable", "method": "POST", "path": "/invoices/{id}/paymentreminder/disable"},
+            {"name": "writeoff", "method": "POST", "path": "/invoices/{id}/writeoff"},
+            {"name": "writeoff-cancel", "method": "POST", "path": "/invoices/{id}/writeoff/cancel"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "bills",
+        "/bills",
+        actions=[
+            {"name": "status-open", "method": "POST", "path": "/bills/{id}/status/open"},
+            {"name": "status-void", "method": "POST", "path": "/bills/{id}/status/void"},
+            {"name": "submit", "method": "POST", "path": "/bills/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/bills/{id}/approve"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "items",
+        "/items",
+        actions=[
+            {"name": "activate", "method": "POST", "path": "/items/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/items/{id}/inactive"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "chartofaccounts",
+        "/chartofaccounts",
+        actions=[
+            {"name": "activate", "method": "POST", "path": "/chartofaccounts/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/chartofaccounts/{id}/inactive"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "bankaccounts",
+        "/bankaccounts",
+        actions=[
+            {"name": "activate", "method": "POST", "path": "/bankaccounts/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/bankaccounts/{id}/inactive"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "banktransactions",
+        "/banktransactions",
+        actions=[
+            {"name": "unmatch", "method": "POST", "path": "/banktransactions/{id}/unmatch"},
+            {"name": "uncategorize", "method": "POST", "path": "/banktransactions/{id}/uncategorize"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "vendorcredits",
+        "/vendorcredits",
+        actions=[
+            {"name": "status-open", "method": "POST", "path": "/vendorcredits/{id}/status/open"},
+            {"name": "status-void", "method": "POST", "path": "/vendorcredits/{id}/status/void"},
+            {"name": "submit", "method": "POST", "path": "/vendorcredits/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/vendorcredits/{id}/approve"},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "vendorpayments",
+        "/vendorpayments",
+        actions=[
+            {"name": "email", "method": "POST", "path": "/vendorpayments/{id}/email", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "customerpayments",
+        "/customerpayments",
+    )
+
+    add_resource_commands(
+        sub,
+        "estimates",
+        "/estimates",
+        actions=[
+            {"name": "status-sent", "method": "POST", "path": "/estimates/{id}/status/sent"},
+            {"name": "status-accepted", "method": "POST", "path": "/estimates/{id}/status/accepted"},
+            {"name": "status-declined", "method": "POST", "path": "/estimates/{id}/status/declined"},
+            {"name": "submit", "method": "POST", "path": "/estimates/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/estimates/{id}/approve"},
+            {"name": "email", "method": "POST", "path": "/estimates/{id}/email", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "salesorders",
+        "/salesorders",
+        actions=[
+            {"name": "status-open", "method": "POST", "path": "/salesorders/{id}/status/open"},
+            {"name": "status-void", "method": "POST", "path": "/salesorders/{id}/status/void"},
+            {"name": "submit", "method": "POST", "path": "/salesorders/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/salesorders/{id}/approve"},
+            {"name": "email", "method": "POST", "path": "/salesorders/{id}/email", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "purchaseorders",
+        "/purchaseorders",
+        actions=[
+            {"name": "status-open", "method": "POST", "path": "/purchaseorders/{id}/status/open"},
+            {"name": "status-billed", "method": "POST", "path": "/purchaseorders/{id}/status/billed"},
+            {"name": "status-cancelled", "method": "POST", "path": "/purchaseorders/{id}/status/cancelled"},
+            {"name": "submit", "method": "POST", "path": "/purchaseorders/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/purchaseorders/{id}/approve"},
+            {"name": "email", "method": "POST", "path": "/purchaseorders/{id}/email", "body": True},
+            {"name": "reject", "method": "POST", "path": "/purchaseorders/{id}/reject", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "creditnotes",
+        "/creditnotes",
+        actions=[
+            {"name": "status-void", "method": "POST", "path": "/creditnotes/{id}/status/void"},
+            {"name": "status-draft", "method": "POST", "path": "/creditnotes/{id}/status/draft"},
+            {"name": "status-open", "method": "POST", "path": "/creditnotes/{id}/status/open"},
+            {"name": "submit", "method": "POST", "path": "/creditnotes/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/creditnotes/{id}/approve"},
+            {"name": "email", "method": "POST", "path": "/creditnotes/{id}/email", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "retainerinvoices",
+        "/retainerinvoices",
+        actions=[
+            {"name": "status-sent", "method": "POST", "path": "/retainerinvoices/{id}/status/sent"},
+            {"name": "status-void", "method": "POST", "path": "/retainerinvoices/{id}/status/void"},
+            {"name": "status-draft", "method": "POST", "path": "/retainerinvoices/{id}/status/draft"},
+            {"name": "submit", "method": "POST", "path": "/retainerinvoices/{id}/submit"},
+            {"name": "approve", "method": "POST", "path": "/retainerinvoices/{id}/approve"},
+            {"name": "email", "method": "POST", "path": "/retainerinvoices/{id}/email", "body": True},
+        ],
+    )
+
+    add_resource_commands(
+        sub,
+        "projects",
+        "/projects",
+        actions=[
+            {"name": "activate", "method": "POST", "path": "/projects/{id}/active"},
+            {"name": "deactivate", "method": "POST", "path": "/projects/{id}/inactive"},
+            {"name": "clone", "method": "POST", "path": "/projects/{id}/clone"},
+        ],
+    )
+
+    add_tasks_commands(sub)
+    add_timeentry_commands(sub)
+
+    add_resource_commands(
+        sub,
+        "journals",
+        "/journals",
+        actions=[
+            {"name": "publish", "method": "POST", "path": "/journals/{id}/status/publish"},
+        ],
+    )
+
+    add_resource_commands(sub, "taxes", "/settings/taxes")
+    add_resource_commands(sub, "taxgroups", "/settings/taxgroups")
+    add_resource_commands(sub, "taxauthorities", "/settings/taxauthorities")
+    add_resource_commands(sub, "taxexemptions", "/settings/taxexemptions")
 
     args = p.parse_args()
     cfg = load_config()
@@ -437,18 +724,6 @@ def main():
         cmd_orgs_select(cfg, args.id)
         return
 
-    if args.cmd == "contacts-list":
-        dc, dc_info = get_dc(cfg, args.dc)
-        query = load_json_arg(args.query) if args.query else {}
-        cmd_contacts_list(cfg, dc_info, query)
-        return
-
-    if args.cmd == "contacts-create":
-        dc, dc_info = get_dc(cfg, args.dc)
-        body = load_json_arg(args.body)
-        cmd_contacts_create(cfg, dc_info, body)
-        return
-
     if args.cmd == "contacts-upsert":
         dc, dc_info = get_dc(cfg, args.dc)
         cmd_contacts_upsert(cfg, dc_info, args.name, args.type)
@@ -460,22 +735,10 @@ def main():
         cmd_expenses_create(cfg, dc_info, body, receipt=args.receipt, attachment=args.attachment)
         return
 
-    if args.cmd == "invoices-create":
-        dc, dc_info = get_dc(cfg, args.dc)
-        body = load_json_arg(args.body)
-        cmd_invoices_create(cfg, dc_info, body)
-        return
-
     if args.cmd == "invoices-email":
         dc, dc_info = get_dc(cfg, args.dc)
         body = load_json_arg(args.body) if args.body else None
         cmd_invoices_email(cfg, dc_info, args.invoice_id, body=body)
-        return
-
-    if args.cmd == "banktransactions-list":
-        dc, dc_info = get_dc(cfg, args.dc)
-        query = load_json_arg(args.query) if args.query else {}
-        cmd_banktransactions_list(cfg, dc_info, query)
         return
 
     if args.cmd == "banktransactions-match":
@@ -487,6 +750,11 @@ def main():
     if args.cmd == "banktransactions-match-suggestions":
         dc, dc_info = get_dc(cfg, args.dc)
         cmd_banktransactions_uncategorized_matches(cfg, dc_info, args.transaction_id)
+        return
+
+    if hasattr(args, "_handler"):
+        dc, dc_info = get_dc(cfg, args.dc)
+        args._handler(cfg, dc_info, args)
         return
 
     p.print_help()
