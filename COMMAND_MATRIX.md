@@ -126,7 +126,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-accepted, status-declined, submit, approve, email, comments-list/add/delete, templates-list/apply
+- actions: status-sent, status-accepted, status-declined, submit, approve, email, comments-list/add/delete, templates-list/apply, pdf, print
 
 ## Expenses
 
@@ -162,7 +162,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete
+- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete, pdf, print
 
 ## Items
 
@@ -279,7 +279,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve, email, comments-list/add/delete, attach, templates-list/apply
+- actions: status-open, status-void, submit, approve, email, comments-list/add/delete, attach, templates-list/apply, pdf, print
 
 ## Sales Receipt
 

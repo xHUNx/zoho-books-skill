@@ -63,6 +63,7 @@ python3 scripts/zoho_books.py invoices-status-sent --id "INV_ID"
 python3 scripts/zoho_books.py invoices-email --invoice-id "INV_ID" --body @invoice_email.json
 python3 scripts/zoho_books.py invoices-comments-add --id "INV_ID" --body @comment.json
 python3 scripts/zoho_books.py invoices-attach --id "INV_ID" --file /path/to/file.pdf
+python3 scripts/zoho_books.py invoices-pdf --query '{"invoice_id":"INV_ID"}' --out invoice.pdf
 
 python3 scripts/zoho_books.py bills-create --body @bill.json
 python3 scripts/zoho_books.py bills-approve --id "BILL_ID"

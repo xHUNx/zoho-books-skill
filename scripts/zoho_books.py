@@ -648,6 +648,43 @@ def main():
     s.add_argument("--body", required=True, help="JSON object (or @file.json)")
 
     s = sub.add_parser("banktransactions-match-suggestions", help="Get match suggestions")
+
+    s = sub.add_parser("invoices-pdf", help="Download invoice PDF")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/invoices/pdf")
+
+    s = sub.add_parser("invoices-print", help="Download invoice print")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/invoices/print")
+
+    s = sub.add_parser("estimates-pdf", help="Download estimate PDF")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/estimates/pdf")
+
+    s = sub.add_parser("estimates-print", help="Download estimate print")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/estimates/print")
+
+    s = sub.add_parser("salesorders-pdf", help="Download sales order PDF")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/salesorders/pdf")
+
+    s = sub.add_parser("salesorders-print", help="Download sales order print")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.add_argument("--out", required=True)
+    s.set_defaults(_handler="_download", _path="/salesorders/print")
+
     s.add_argument("--dc", default=None)
     s.add_argument("--transaction-id", required=True)
 
@@ -1055,6 +1092,13 @@ def main():
         cmd_banktransactions_uncategorized_matches(cfg, dc_info, args.transaction_id)
         return
 
+
+
+    if getattr(args, "_handler", None) == "_download":
+        dc, dc_info = get_dc(cfg, args.dc)
+        path = build_path(args._path, args)
+        cmd_download(cfg, dc_info, path, args.out, query=args.query)
+        return
 
     if getattr(args, "_handler", None) == "_upload":
         dc, dc_info = get_dc(cfg, args.dc)
