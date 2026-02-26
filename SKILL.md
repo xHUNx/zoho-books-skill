@@ -9,8 +9,7 @@ metadata: {"openclaw":{"requires":{"bins":["python3"],"env":[]}}}
 ## Quick start
 
 ```bash
-python3 scripts/zoho_books.py init --dc EU
-python3 scripts/zoho_books.py auth-url --redirect-uri "https://example.com/callback"
+python3 scripts/setup_wizard.py
 ```
 
 ## Notes

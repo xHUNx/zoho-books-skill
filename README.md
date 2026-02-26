@@ -4,6 +4,23 @@ A full‑coverage Zoho Books integration. This repo currently contains the **OAu
 
 ## Quick start (OAuth)
 
+### Option A — Setup Wizard (recommended)
+
+```bash
+python3 scripts/setup_wizard.py
+```
+
+Follow the prompts, approve the URL, paste back the code, and the config will be saved to:
+`~/.openclaw/zoho-books/config.json`
+
+Then set your org ID:
+
+```bash
+python3 scripts/zoho_books.py orgs-select --id "ORG_ID"
+```
+
+### Option B — Manual
+
 1) Create a Zoho API client (EU default)
 2) Initialize config:
 
