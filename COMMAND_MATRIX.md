@@ -9,7 +9,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: activate, deactivate
+- actions: activate, deactivate, statements-import, statements-lastimported, statements-delete
 
 ## Bank Rules
 
@@ -45,7 +45,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve, comments-list/add/delete, attach, payments-list/add/get/delete
+- actions: status-open, status-void, submit, approve, comments-list/add/delete, attach, payments-list/add/get/delete, credits-apply
 
 ## Chart Of Accounts
 
@@ -162,7 +162,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete, pdf, print
+- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete, credits-apply, creditsapplied-list/delete, paymentlink, pdf, print
 
 ## Items
 
@@ -333,7 +333,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-open, status-void, submit, approve, comments-list/add/delete, refunds-list/add/get/update/delete
+- actions: status-open, status-void, submit, approve, comments-list/add/delete, refunds-list/add/get/update/delete, bills-list/apply/delete
 
 ## Vendor Payments
 

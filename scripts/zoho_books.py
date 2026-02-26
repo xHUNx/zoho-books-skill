@@ -578,6 +578,75 @@ def add_custom_modules_commands(sub):
     s.set_defaults(_method="DELETE", _path="/{module}/{id}", _handler=handle_api_command)
 
 
+def add_bankstatements_commands(sub):
+    s = sub.add_parser("bankstatements-import", help="Import bank statement")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/bankstatements", _handler=handle_api_command)
+
+    s = sub.add_parser("bankaccounts-lastimported", help="Get last imported statement for account")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--account-id", required=True)
+    s.set_defaults(_method="GET", _path="/bankaccounts/{account_id}/statement/lastimported", _handler=handle_api_command)
+
+    s = sub.add_parser("bankaccounts-statement-delete", help="Delete imported statement for account")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--account-id", required=True)
+    s.add_argument("--statement-id", required=True)
+    s.set_defaults(_method="DELETE", _path="/bankaccounts/{account_id}/statement/{statement_id}", _handler=handle_api_command)
+
+
+def add_invoice_credits_commands(sub):
+    s = sub.add_parser("invoices-credits-apply", help="Apply credit note to invoice")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/invoices/{id}/credits", _handler=handle_api_command)
+
+    s = sub.add_parser("invoices-creditsapplied-list", help="List credits applied to invoice")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path="/invoices/{id}/creditsapplied", _handler=handle_api_command)
+
+    s = sub.add_parser("invoices-creditsapplied-delete", help="Delete applied credit from invoice")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--creditnotes-invoice-id", required=True)
+    s.set_defaults(_method="DELETE", _path="/invoices/{id}/creditsapplied/{creditnotes_invoice_id}", _handler=handle_api_command)
+
+    s = sub.add_parser("invoices-paymentlink", help="Get invoice payment link")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="GET", _path="/share/paymentlink", _handler=handle_api_command)
+
+
+def add_bills_credits_commands(sub):
+    s = sub.add_parser("bills-credits-apply", help="Apply vendor credit to bill")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/bills/{id}/credits", _handler=handle_api_command)
+
+
+def add_vendorcredits_bills_commands(sub):
+    s = sub.add_parser("vendorcredits-bills-list", help="List bills associated with vendor credit")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path="/vendorcredits/{id}/bills", _handler=handle_api_command)
+
+    s = sub.add_parser("vendorcredits-bills-apply", help="Apply vendor credit to bill")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/vendorcredits/{id}/bills", _handler=handle_api_command)
+
+    s = sub.add_parser("vendorcredits-bills-delete", help="Remove vendor credit from bill")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--vendor-credit-bill-id", required=True)
+    s.set_defaults(_method="DELETE", _path="/vendorcredits/{id}/bills/{vendor_credit_bill_id}", _handler=handle_api_command)
+
+
 def main():
     p = argparse.ArgumentParser(description="Zoho Books CLI helper")
     sub = p.add_subparsers(dest="cmd")

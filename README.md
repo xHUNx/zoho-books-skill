@@ -87,6 +87,10 @@ python3 scripts/zoho_books.py custommodules-create --module cm_debtor --body @cu
 
 # Bank transaction categorization
 python3 scripts/zoho_books.py banktransactions-categorize-expenses --id "TXN_ID" --body @categorize_expense.json
+
+# Bank statements
+python3 scripts/zoho_books.py bankstatements-import --body @statement.json
+python3 scripts/zoho_books.py bankaccounts-lastimported --account-id "ACC_ID"
 ```
 
 ## Config
