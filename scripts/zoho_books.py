@@ -534,6 +534,50 @@ def add_refunds_commands(sub, prefix, base, refund_param="refund_id"):
     s.set_defaults(_method="DELETE", _path=f"/{base}/{{id}}/refunds/{{{refund_param}}}", _handler=handle_api_command)
 
 
+def add_custom_modules_commands(sub):
+    s = sub.add_parser("custommodules-list", help="List records for a custom module")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.set_defaults(_method="GET", _path="/{module}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-create", help="Create record in a custom module")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="POST", _path="/{module}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-bulk-update", help="Bulk update custom module records")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="PUT", _path="/{module}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-delete", help="Delete custom module")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.set_defaults(_method="DELETE", _path="/{module}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-get", help="Get custom module record")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path="/{module}/{id}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-update", help="Update custom module record")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_method="PUT", _path="/{module}/{id}", _handler=handle_api_command)
+
+    s = sub.add_parser("custommodules-delete-record", help="Delete custom module record")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--module", required=True)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="DELETE", _path="/{module}/{id}", _handler=handle_api_command)
+
+
 def main():
     p = argparse.ArgumentParser(description="Zoho Books CLI helper")
     sub = p.add_subparsers(dest="cmd")
@@ -692,6 +736,15 @@ def main():
         "banktransactions",
         "/banktransactions",
         actions=[
+            {"name": "categorize", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize", "body": True},
+            {"name": "categorize-expenses", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize/expenses", "body": True},
+            {"name": "categorize-vendorpayments", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize/vendorpayments", "body": True},
+            {"name": "categorize-customerpayments", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize/customerpayments", "body": True},
+            {"name": "categorize-creditnoterefunds", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize/creditnoterefunds", "body": True},
+            {"name": "categorize-vendorcreditrefunds", "method": "POST", "path": "/banktransactions/uncategorized/{id}/categorize/vendorcreditrefunds", "body": True},
+            {"name": "categorize-paymentrefunds", "method": "POST", "path": "/banktransactions/uncategorized/{statement_line_id}/categorize/paymentrefunds", "body": True},
+            {"name": "categorize-vendorpaymentrefunds", "method": "POST", "path": "/banktransactions/uncategorized/{statement_line_id}/categorize/vendorpaymentrefunds", "body": True},
+
             {"name": "unmatch", "method": "POST", "path": "/banktransactions/{id}/unmatch"},
             {"name": "uncategorize", "method": "POST", "path": "/banktransactions/{id}/uncategorize"},
         ],
@@ -875,6 +928,11 @@ def main():
     add_templates_commands(sub, "purchaseorders", "purchaseorders")
 
     add_comments_commands(sub, "creditnotes", "/creditnotes/{id}/comments")
+    s = sub.add_parser("creditnotes-emailhistory", help="Get credit note email history")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path="/creditnotes/{id}/emailhistory", _handler=handle_api_command)
+
     add_templates_commands(sub, "creditnotes", "creditnotes")
     add_refunds_commands(sub, "creditnotes", "creditnotes", refund_param="creditnote_refund_id")
 

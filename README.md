@@ -79,6 +79,13 @@ python3 scripts/zoho_books.py timeentries-timer-start --id "TIME_ID"
 # Generic file upload / download
 python3 scripts/zoho_books.py upload --path "/invoices/INV_ID/attachment" --file /path/to/file.pdf
 python3 scripts/zoho_books.py download --path "/invoices/pdf" --query '{"invoice_id":"INV_ID"}' --out invoice.pdf
+
+# Custom modules
+python3 scripts/zoho_books.py custommodules-list --module cm_debtor
+python3 scripts/zoho_books.py custommodules-create --module cm_debtor --body @custom_record.json
+
+# Bank transaction categorization
+python3 scripts/zoho_books.py banktransactions-categorize-expenses --id "TXN_ID" --body @categorize_expense.json
 ```
 
 ## Config

@@ -27,7 +27,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: match, unmatch, uncategorize
+- actions: match, unmatch, uncategorize, categorize, categorize-expenses, categorize-vendorpayments, categorize-customerpayments, categorize-creditnoterefunds, categorize-vendorcreditrefunds, categorize-paymentrefunds, categorize-vendorpaymentrefunds
 
 ## Base Currency Adjustment
 
@@ -81,7 +81,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-void, status-draft, status-open, submit, approve, email, comments-list/add/delete, templates-list/apply, refunds-list/add/get/update/delete
+- actions: status-void, status-draft, status-open, submit, approve, email, emailhistory, comments-list/add/delete, templates-list/apply, refunds-list/add/get/update/delete
 
 ## Currency
 
@@ -99,7 +99,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (custom module name via path; not wired)
+- actions: bulk-update, delete-record
 
 ## Customer Debit Notes
 
