@@ -1,6 +1,6 @@
-# Zoho Books OpenClaw Skill (WIP)
+# Zoho Books OpenClaw Skill
 
-A full‑coverage Zoho Books integration. This repo currently contains the **OAuth setup + API client** scaffolding and will expand into complete accounting workflows.
+A full‑coverage Zoho Books integration for OpenClaw. Use it to automate bookkeeping flows across invoices, expenses, banking, contacts, items, projects, time tracking, fixed assets, and more.
 
 ## Quick start (OAuth)
 
@@ -47,13 +47,12 @@ python3 scripts/zoho_books.py orgs-list
 python3 scripts/zoho_books.py orgs-select --id "ORG_ID"
 ```
 
-6) Core commands (examples):
+## Example commands
 
 ```bash
 python3 scripts/zoho_books.py contacts-list
 python3 scripts/zoho_books.py contacts-create --body @contact.json
 python3 scripts/zoho_books.py contacts-get --id "CONTACT_ID"
-python3 scripts/zoho_books.py contacts-activate --id "CONTACT_ID"
 
 python3 scripts/zoho_books.py expenses-create --body @expense.json --receipt /path/to/receipt.pdf
 python3 scripts/zoho_books.py expenses-list --query '{"date_start":"2024-01-01"}'
@@ -69,7 +68,6 @@ python3 scripts/zoho_books.py invoices-payments-add --id "INV_ID" --body '{"amou
 
 python3 scripts/zoho_books.py bills-create --body @bill.json
 python3 scripts/zoho_books.py bills-approve --id "BILL_ID"
-python3 scripts/zoho_books.py bills-attach --id "BILL_ID" --file /path/to/file.pdf
 
 python3 scripts/zoho_books.py banktransactions-list --query '{"status":"uncategorized"}'
 python3 scripts/zoho_books.py banktransactions-match --transaction-id "TXN_ID" --body @match.json
@@ -81,7 +79,7 @@ python3 scripts/zoho_books.py timeentries-timer-start --id "TIME_ID"
 
 # Generic file upload / download
 python3 scripts/zoho_books.py upload --path "/invoices/INV_ID/attachment" --file /path/to/file.pdf
-python3 scripts/zoho_books.py download --path "/invoices/pdf" --query '{"invoice_id":"INV_ID"}' --out invoice.pdf
+python3 scripts/zoho_books.py download --path "/invoices/pdf" --query '{"invoice_ids":"INV_ID"}' --out invoice.pdf
 
 # Custom modules
 python3 scripts/zoho_books.py custommodules-list --module cm_debtor
@@ -96,9 +94,6 @@ python3 scripts/zoho_books.py bankaccounts-lastimported --account-id "ACC_ID"
 
 # Customer debit note (uses /invoices with type=debit_note; must reference a non-draft invoice)
 python3 scripts/zoho_books.py debitnotes-create --body '{"customer_id":"CUST_ID","reference_invoice_id":"INV_ID","line_items":[{"description":"Adjustment","rate":2,"quantity":1,"account_id":"ACCOUNT_ID"}]}'
-
-# Reporting tags (minimal example)
-python3 scripts/zoho_books.py reportingtags-create --body '{"tag_name":"QA Tag","entities":[{"entity_name":"customers","is_enabled":true}],"multi_preference_entities":{"preference":"line_item","entities":[{"entity_name":"sales","is_enabled":true}]},"tag_options":[{"tag_option_name":"A"},{"tag_option_name":"B"}]}'
 ```
 
 ## Config
@@ -115,5 +110,9 @@ Stored at: `~/.openclaw/zoho-books/config.json`
 }
 ```
 
-## Status
-OAuth scaffold complete. Core CRUD + actions added for major accounting modules (invoices, expenses, bills, contacts, items, bank accounts/transactions, estimates, sales/purchase orders, credit notes, retainer invoices, vendor credits/payments, projects/tasks/time entries, taxes, journals) plus remaining modules (bank rules, base currency adjustment, contact persons, currencies, fixed assets, locations, opening balances, recurring bills/expenses/invoices, reporting tags, sales receipts, users). Continue expanding advanced actions and custom module handling.
+## Coverage
+See **COMMAND_MATRIX.md** for the full command list and module coverage.
+
+## Notes
+- Demo/free tiers often have rate limits (e.g., 1000 calls/day). Keep QA runs compact.
+- Some modules require features to be enabled in Zoho Books before API calls will succeed.
