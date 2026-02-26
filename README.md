@@ -63,7 +63,9 @@ python3 scripts/zoho_books.py invoices-status-sent --id "INV_ID"
 python3 scripts/zoho_books.py invoices-email --invoice-id "INV_ID" --body @invoice_email.json
 python3 scripts/zoho_books.py invoices-comments-add --id "INV_ID" --body @comment.json
 python3 scripts/zoho_books.py invoices-attach --id "INV_ID" --file /path/to/file.pdf
-python3 scripts/zoho_books.py invoices-pdf --query '{"invoice_id":"INV_ID"}' --out invoice.pdf
+python3 scripts/zoho_books.py invoices-pdf --query '{"invoice_ids":"INV_ID"}' --out invoice.pdf
+python3 scripts/zoho_books.py invoices-paymentlink --invoice-id "INV_ID" --link-type public --expiry 2026-12-31
+python3 scripts/zoho_books.py invoices-payments-add --id "INV_ID" --body '{"amount":10,"payment_mode":"Cash","account_id":"ACCOUNT_ID"}'
 
 python3 scripts/zoho_books.py bills-create --body @bill.json
 python3 scripts/zoho_books.py bills-approve --id "BILL_ID"
@@ -91,6 +93,12 @@ python3 scripts/zoho_books.py banktransactions-categorize-expenses --id "TXN_ID"
 # Bank statements
 python3 scripts/zoho_books.py bankstatements-import --body @statement.json
 python3 scripts/zoho_books.py bankaccounts-lastimported --account-id "ACC_ID"
+
+# Customer debit note (uses /invoices with type=debit_note; must reference a non-draft invoice)
+python3 scripts/zoho_books.py debitnotes-create --body '{"customer_id":"CUST_ID","reference_invoice_id":"INV_ID","line_items":[{"description":"Adjustment","rate":2,"quantity":1,"account_id":"ACCOUNT_ID"}]}'
+
+# Reporting tags (minimal example)
+python3 scripts/zoho_books.py reportingtags-create --body '{"tag_name":"QA Tag","entities":[{"entity_name":"customers","is_enabled":true}],"multi_preference_entities":{"preference":"line_item","entities":[{"entity_name":"sales","is_enabled":true}]},"tag_options":[{"tag_option_name":"A"},{"tag_option_name":"B"}]}'
 ```
 
 ## Config

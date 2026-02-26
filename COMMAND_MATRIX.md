@@ -108,7 +108,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: (not wired yet)
+- notes: must use type=debit_note and reference_invoice_id; line_items must use account_id (no item_id)
 
 ## Customer Payments
 
@@ -162,7 +162,7 @@ Generated from MODULES.md — fill in concrete CLI commands per module.
 - create
 - update
 - delete
-- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/add/get/delete, credits-apply, creditsapplied-list/delete, paymentlink, pdf, print
+- actions: status-sent, status-void, status-draft, submit, approve, paymentreminder-enable, paymentreminder-disable, writeoff, writeoff-cancel, email, comments-list/add/delete, attach, templates-list/apply, payments-list/get/delete, payments-add (via customerpayments), credits-apply, creditsapplied-list/delete, paymentlink (public/private + expiry), pdf, print
 
 ## Items
 

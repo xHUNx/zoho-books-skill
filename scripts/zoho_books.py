@@ -477,17 +477,18 @@ def add_templates_commands(sub, prefix, base):
     s.set_defaults(_method="PUT", _path=f"/{base}/{{id}}/templates/{{template_id}}", _handler=handle_api_command)
 
 
-def add_payments_commands(sub, prefix, base):
+def add_payments_commands(sub, prefix, base, skip_add=False):
     s = sub.add_parser(f"{prefix}-payments-list", help=f"List {prefix} payments")
     s.add_argument("--dc", default=None)
     s.add_argument("--id", required=True)
     s.set_defaults(_method="GET", _path=f"/{base}/{{id}}/payments", _handler=handle_api_command)
 
-    s = sub.add_parser(f"{prefix}-payments-add", help=f"Add {prefix} payment")
-    s.add_argument("--dc", default=None)
-    s.add_argument("--id", required=True)
-    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
-    s.set_defaults(_method="POST", _path=f"/{base}/{{id}}/payments", _handler=handle_api_command)
+    if not skip_add:
+        s = sub.add_parser(f"{prefix}-payments-add", help=f"Add {prefix} payment")
+        s.add_argument("--dc", default=None)
+        s.add_argument("--id", required=True)
+        s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+        s.set_defaults(_method="POST", _path=f"/{base}/{{id}}/payments", _handler=handle_api_command)
 
     s = sub.add_parser(f"{prefix}-payments-get", help=f"Get {prefix} payment")
     s.add_argument("--dc", default=None)
@@ -616,8 +617,10 @@ def add_invoice_credits_commands(sub):
 
     s = sub.add_parser("invoices-paymentlink", help="Get invoice payment link")
     s.add_argument("--dc", default=None)
-    s.add_argument("--query", required=True, help="JSON object (or @file.json)")
-    s.set_defaults(_method="GET", _path="/share/paymentlink", _handler=handle_api_command)
+    s.add_argument("--invoice-id", required=True)
+    s.add_argument("--link-type", default="public", choices=["public", "private"])
+    s.add_argument("--expiry", required=True, help="YYYY-MM-DD")
+    s.set_defaults(_handler="_invoice_paymentlink")
 
 
 def add_bills_credits_commands(sub):
@@ -645,6 +648,64 @@ def add_vendorcredits_bills_commands(sub):
     s.add_argument("--id", required=True)
     s.add_argument("--vendor-credit-bill-id", required=True)
     s.set_defaults(_method="DELETE", _path="/vendorcredits/{id}/bills/{vendor_credit_bill_id}", _handler=handle_api_command)
+
+
+def cmd_invoice_paymentlink(cfg, dc_info, invoice_id, link_type, expiry_time):
+    query = {
+        "transaction_id": invoice_id,
+        "transaction_type": "invoice",
+        "link_type": link_type,
+        "expiry_time": expiry_time,
+    }
+    resp = api_request(cfg, dc_info, "GET", "/share/paymentlink", query=query)
+    print(resp)
+
+
+def cmd_invoice_payments_add(cfg, dc_info, invoice_id, body):
+    body = load_json_arg(body)
+    if "customer_id" not in body:
+        # fetch invoice to get customer_id
+        inv_raw = api_request(cfg, dc_info, "GET", f"/invoices/{invoice_id}")
+        inv = json.loads(inv_raw)
+        customer_id = inv.get("invoice", {}).get("customer_id")
+        if not customer_id:
+            raise SystemExit("customer_id missing; provide in body or ensure invoice has customer_id")
+        body["customer_id"] = customer_id
+    if "invoices" not in body:
+        amount = body.get("amount")
+        if amount is None:
+            raise SystemExit("amount required to apply payment to invoice")
+        body["invoices"] = [{"invoice_id": invoice_id, "amount_applied": amount}]
+    resp = api_request(cfg, dc_info, "POST", "/customerpayments", body=body)
+    print(resp)
+
+
+def add_debitnotes_commands(sub):
+    s = sub.add_parser("debitnotes-list", help="List customer debit notes")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--query", default=None, help="JSON object (or @file.json)")
+    s.set_defaults(_method="GET", _path="/invoices", _handler=handle_api_command)
+
+    s = sub.add_parser("debitnotes-create", help="Create customer debit note")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_handler="_debitnotes_create")
+
+    s = sub.add_parser("debitnotes-get", help="Get customer debit note")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="GET", _path="/invoices/{id}", _handler=handle_api_command)
+
+    s = sub.add_parser("debitnotes-update", help="Update customer debit note")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_handler="_debitnotes_update")
+
+    s = sub.add_parser("debitnotes-delete", help="Delete customer debit note")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.set_defaults(_method="DELETE", _path="/invoices/{id}", _handler=handle_api_command)
 
 
 def main():
@@ -1013,7 +1074,7 @@ def main():
     add_comments_commands(sub, "invoices", "/invoices/{id}/comments")
     add_attachment_command(sub, "invoices", "/invoices/{id}/attachment")
     add_templates_commands(sub, "invoices", "invoices")
-    add_payments_commands(sub, "invoices", "invoices")
+    add_payments_commands(sub, "invoices", "invoices", skip_add=True)
 
     add_comments_commands(sub, "bills", "/bills/{id}/comments")
     add_attachment_command(sub, "bills", "/bills/{id}/attachment")
@@ -1172,10 +1233,39 @@ def main():
         cmd_download(cfg, dc_info, path, args.out, query=args.query)
         return
 
+
+    if getattr(args, "_handler", None) == "_invoice_paymentlink":
+        dc, dc_info = get_dc(cfg, args.dc)
+        cmd_invoice_paymentlink(cfg, dc_info, args.invoice_id, args.link_type, args.expiry)
+        return
+
+
+    if getattr(args, "_handler", None) == "_debitnotes_create":
+        dc, dc_info = get_dc(cfg, args.dc)
+        body = load_json_arg(args.body)
+        body["type"] = "debit_note"
+        resp = api_request(cfg, dc_info, "POST", "/invoices", body=body)
+        print(resp)
+        return
+
+    if getattr(args, "_handler", None) == "_debitnotes_update":
+        dc, dc_info = get_dc(cfg, args.dc)
+        body = load_json_arg(args.body)
+        body["type"] = "debit_note"
+        resp = api_request(cfg, dc_info, "PUT", f"/invoices/{args.id}", body=body)
+        print(resp)
+        return
+
     if getattr(args, "_handler", None) == "_upload":
         dc, dc_info = get_dc(cfg, args.dc)
         path = build_path(args._path, args)
         cmd_upload(cfg, dc_info, path, args.file, field=args.field, body=args.body)
+        return
+
+
+    if getattr(args, "_handler", None) == "_invoice_payments_add":
+        dc, dc_info = get_dc(cfg, args.dc)
+        cmd_invoice_payments_add(cfg, dc_info, args.id, args.body)
         return
 
     if hasattr(args, "_handler"):
