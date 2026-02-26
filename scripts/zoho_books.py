@@ -1075,6 +1075,11 @@ def main():
     add_attachment_command(sub, "invoices", "/invoices/{id}/attachment")
     add_templates_commands(sub, "invoices", "invoices")
     add_payments_commands(sub, "invoices", "invoices", skip_add=True)
+    s = sub.add_parser("invoices-payments-add", help="Add invoice payment via customerpayments")
+    s.add_argument("--dc", default=None)
+    s.add_argument("--id", required=True)
+    s.add_argument("--body", required=True, help="JSON object (or @file.json)")
+    s.set_defaults(_handler="_invoice_payments_add")
 
     add_comments_commands(sub, "bills", "/bills/{id}/comments")
     add_attachment_command(sub, "bills", "/bills/{id}/attachment")
@@ -1120,6 +1125,7 @@ def main():
     add_invoice_credits_commands(sub)
     add_bills_credits_commands(sub)
     add_vendorcredits_bills_commands(sub)
+    add_debitnotes_commands(sub)
 
     args = p.parse_args()
     cfg = load_config()
